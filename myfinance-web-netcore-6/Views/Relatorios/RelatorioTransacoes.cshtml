@@ -1,0 +1,260 @@
+@model IEnumerable<myfinance_web_netcore.Models.Transacao>
+
+@{
+    ViewData["Title"] = "Relatório de Transações";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-table"></i> Relatório de Transações por Período</h2>
+                <div class="btn-group">
+                    <a asp-controller="Relatorios" asp-action="GraficoReceitasDespesas" 
+                       asp-route-dataInicio="@ViewBag.DataInicio" 
+                       asp-route-dataFim="@ViewBag.DataFim" 
+                       class="btn btn-info">
+                        <i class="fas fa-chart-pie"></i> Ver Gráficos
+                    </a>
+                    <button onclick="window.print()" class="btn btn-secondary">
+                        <i class="fas fa-print"></i> Imprimir
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-filter"></i> Filtros do Relatório</h6>
+                </div>
+                <div class="card-body">
+                    <form method="get" asp-action="RelatorioTransacoes">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">Data Início</label>
+                                <input type="date" name="dataInicio" class="form-control" value="@ViewBag.DataInicio" required />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Data Fim</label>
+                                <input type="date" name="dataFim" class="form-control" value="@ViewBag.DataFim" required />
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Tipo</label>
+                                <select name="filtroTipo" class="form-select">
+                                    <option value="">Todos</option>
+                                    <option value="Receita" selected="@(ViewBag.FiltroTipo == "Receita")">Receitas</option>
+                                    <option value="Despesa" selected="@(ViewBag.FiltroTipo == "Despesa")">Despesas</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Plano de Contas</label>
+                                @Html.DropDownList("planoContasId", ViewBag.PlanoContas as SelectList, "Todos", new { @class = "form-select" })
+                            </div>
+                            <div class="col-md-1 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Resumo Financeiro -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-success">
+                        <div class="card-body text-center">
+                            <h6 class="card-title">Total Receitas</h6>
+                            <h4>@(((decimal)ViewBag.TotalReceitas).ToString("C2"))</h4>
+                            <small><i class="fas fa-arrow-up"></i> Entradas</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-danger">
+                        <div class="card-body text-center">
+                            <h6 class="card-title">Total Despesas</h6>
+                            <h4>@(((decimal)ViewBag.TotalDespesas).ToString("C2"))</h4>
+                            <small><i class="fas fa-arrow-down"></i> Saídas</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white @(((decimal)ViewBag.SaldoPeriodo) >= 0 ? "bg-primary" : "bg-warning")">
+                        <div class="card-body text-center">
+                            <h6 class="card-title">Saldo do Período</h6>
+                            <h4>@(((decimal)ViewBag.SaldoPeriodo).ToString("C2"))</h4>
+                            <small><i class="fas fa-balance-scale"></i> Resultado</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-info">
+                        <div class="card-body text-center">
+                            <h6 class="card-title">Transações</h6>
+                            <h4>@Model.Count()</h4>
+                            <small><i class="fas fa-list"></i> Registros</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumo por Categoria -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h6 class="mb-0"><i class="fas fa-arrow-up"></i> Receitas por Categoria</h6>
+                        </div>
+                        <div class="card-body">
+                            @if (((IEnumerable<dynamic>)ViewBag.ReceitasPorPlano).Any())
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Categoria</th>
+                                                <th class="text-center">Qtd</th>
+                                                <th class="text-end">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (dynamic item in (IEnumerable<dynamic>)ViewBag.ReceitasPorPlano)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        <span class="badge bg-secondary">@item.PlanoContas?.Codigo</span>
+                                                        @item.PlanoContas?.Descricao
+                                                    </td>
+                                                    <td class="text-center">@item.Quantidade</td>
+                                                    <td class="text-end text-success">
+                                                        <strong>@(((decimal)item.Total).ToString("C2"))</strong>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted text-center">Nenhuma receita no período</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-danger text-white">
+                            <h6 class="mb-0"><i class="fas fa-arrow-down"></i> Despesas por Categoria</h6>
+                        </div>
+                        <div class="card-body">
+                            @if (((IEnumerable<dynamic>)ViewBag.DespesasPorPlano).Any())
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Categoria</th>
+                                                <th class="text-center">Qtd</th>
+                                                <th class="text-end">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (dynamic item in (IEnumerable<dynamic>)ViewBag.DespesasPorPlano)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        <span class="badge bg-secondary">@item.PlanoContas?.Codigo</span>
+                                                        @item.PlanoContas?.Descricao
+                                                    </td>
+                                                    <td class="text-center">@item.Quantidade</td>
+                                                    <td class="text-end text-danger">
+                                                        <strong>@(((decimal)item.Total).ToString("C2"))</strong>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted text-center">Nenhuma despesa no período</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detalhamento das Transações -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-list"></i> Detalhamento das Transações</h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover table-sm">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Histórico</th>
+                                        <th>Categoria</th>
+                                        <th>Tipo</th>
+                                        <th class="text-end">Valor</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <small>@item.Data.ToString("dd/MM/yyyy HH:mm")</small>
+                                            </td>
+                                            <td>@item.Historico</td>
+                                            <td>
+                                                <span class="badge bg-secondary">@item.PlanoContas?.Codigo</span>
+                                                @item.PlanoContas?.Descricao
+                                            </td>
+                                            <td>
+                                                @if (item.PlanoContas?.Tipo == myfinance_web_netcore.Models.TipoPlanoContas.Receita)
+                                                {
+                                                    <span class="badge bg-success">Receita</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">Despesa</span>
+                                                }
+                                            </td>
+                                            <td class="text-end">
+                                                <strong class="@(item.PlanoContas?.Tipo == myfinance_web_netcore.Models.TipoPlanoContas.Receita ? "text-success" : "text-danger")">
+                                                    @item.ValorFormatado
+                                                </strong>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Nenhuma transação encontrada</h5>
+                            <p class="text-muted">Ajuste os filtros ou período para visualizar as transações.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+}

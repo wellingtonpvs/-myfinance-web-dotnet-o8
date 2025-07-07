@@ -1,0 +1,179 @@
+@model myfinance_web_netcore.Models.Transacao
+
+@{
+    ViewData["Title"] = "Excluir Transação";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a asp-action="Index">Transações</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Excluir</li>
+                </ol>
+            </nav>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-danger">
+                    <i class="fas fa-exclamation-triangle"></i> Excluir Transação
+                </h2>
+                <a asp-action="Index" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </a>
+            </div>
+
+            <div class="alert alert-danger" role="alert">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Atenção!</strong> Esta ação não pode ser desfeita. Tem certeza de que deseja excluir esta transação?
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card border-danger">
+                        <div class="card-header bg-danger text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-trash"></i> Confirmar Exclusão
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-borderless">
+                                <tbody>
+                                    <tr>
+                                        <th scope="row" class="text-muted" style="width: 30%;">Histórico:</th>
+                                        <td><strong>@Html.DisplayFor(model => model.Historico)</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="text-muted">Data:</th>
+                                        <td>
+                                            <i class="fas fa-calendar"></i> @Model.Data.ToString("dd/MM/yyyy")
+                                            <i class="fas fa-clock ms-2"></i> @Model.Data.ToString("HH:mm")
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="text-muted">Plano de Contas:</th>
+                                        <td>
+                                            <span class="badge bg-secondary">@Model.PlanoContas?.Codigo</span>
+                                            <strong>@Model.PlanoContas?.Descricao</strong>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="text-muted">Tipo:</th>
+                                        <td>
+                                            @if (Model.PlanoContas?.Tipo == myfinance_web_netcore.Models.TipoPlanoContas.Receita)
+                                            {
+                                                <span class="badge bg-success fs-6">
+                                                    <i class="fas fa-arrow-up"></i> Receita
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger fs-6">
+                                                    <i class="fas fa-arrow-down"></i> Despesa
+                                                </span>
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="text-muted">Valor:</th>
+                                        <td>
+                                            <h4 class="@(Model.PlanoContas?.Tipo == myfinance_web_netcore.Models.TipoPlanoContas.Receita ? "text-success" : "text-danger") mb-0">
+                                                @Model.ValorFormatado
+                                            </h4>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="text-muted">Data de Criação:</th>
+                                        <td>@Model.DataCriacao.ToString("dd/MM/yyyy 'às' HH:mm")</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <hr>
+
+                            <form asp-action="Delete" method="post" class="d-inline">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="fas fa-trash"></i> Sim, Excluir Definitivamente
+                                    </button>
+                                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info">
+                                        <i class="fas fa-eye"></i> Visualizar
+                                    </a>
+                                    <a asp-action="Index" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Cancelar
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <!-- Card de Impacto -->
+                    <div class="card border-warning">
+                        <div class="card-header bg-warning">
+                            <h6 class="mb-0">
+                                <i class="fas fa-info-circle"></i> Impacto da Exclusão
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-3">
+                                <i class="@(Model.PlanoContas?.Tipo == myfinance_web_netcore.Models.TipoPlanoContas.Receita ? "fas fa-arrow-down text-danger" : "fas fa-arrow-up text-success") fa-2x"></i>
+                            </div>
+                            <p class="small mb-2">
+                                <strong>Alteração no saldo:</strong>
+                            </p>
+                            <p class="@(Model.PlanoContas?.Tipo == myfinance_web_netcore.Models.TipoPlanoContas.Receita ? "text-danger" : "text-success")">
+                                @(Model.PlanoContas?.Tipo == myfinance_web_netcore.Models.TipoPlanoContas.Receita ? "-" : "+") @Model.ValorFormatado
+                            </p>
+                            <small class="text-muted">
+                                @if (Model.PlanoContas?.Tipo == myfinance_web_netcore.Models.TipoPlanoContas.Receita)
+                                {
+                                    <span>Esta receita será removida, diminuindo seu saldo total.</span>
+                                }
+                                else
+                                {
+                                    <span>Esta despesa será removida, aumentando seu saldo total.</span>
+                                }
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Card de Alternativas -->
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-lightbulb"></i> Alternativas
+                            </h6>
+                            <p class="mb-2 small">
+                                Se você não deseja excluir definitivamente esta transação, considere:
+                            </p>
+                            <ul class="small mb-0">
+                                <li>
+                                    <a asp-action="Edit" asp-route-id="@Model.Id">Editar</a> as informações para corrigir dados
+                                </li>
+                                <li>Verificar se a transação está correta antes de excluir</li>
+                                <li>Manter o histórico para auditoria financeira</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script>
+        // Confirmar exclusão
+        document.querySelector('form[asp-action="Delete"]').addEventListener('submit', function(e) {
+            if (!confirm('Tem certeza de que deseja excluir esta transação? Esta ação não pode ser desfeita e afetará seu saldo.')) {
+                e.preventDefault();
+            }
+        });
+    </script>
+}

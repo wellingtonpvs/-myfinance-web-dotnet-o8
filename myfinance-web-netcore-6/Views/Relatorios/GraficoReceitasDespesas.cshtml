@@ -1,0 +1,396 @@
+@{
+    ViewData["Title"] = "Gráfico Receitas vs Despesas";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-chart-pie"></i> Gráfico Receitas vs Despesas</h2>
+                <div class="btn-group">
+                    <a asp-controller="Relatorios" asp-action="RelatorioTransacoes" 
+                       asp-route-dataInicio="@ViewBag.DataInicio" 
+                       asp-route-dataFim="@ViewBag.DataFim" 
+                       class="btn btn-info">
+                        <i class="fas fa-table"></i> Ver Relatório
+                    </a>
+                    <button onclick="window.print()" class="btn btn-secondary">
+                        <i class="fas fa-print"></i> Imprimir
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filtros -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-filter"></i> Período para Análise</h6>
+                </div>
+                <div class="card-body">
+                    <form method="get" asp-action="GraficoReceitasDespesas">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Data Início</label>
+                                <input type="date" name="dataInicio" class="form-control" value="@ViewBag.DataInicio" required />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Data Fim</label>
+                                <input type="date" name="dataFim" class="form-control" value="@ViewBag.DataFim" required />
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="fas fa-sync-alt"></i> Atualizar Gráficos
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Resumo -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card text-white bg-success">
+                        <div class="card-body text-center">
+                            <h6 class="card-title">Total Receitas</h6>
+                            <h4>@(((decimal)ViewBag.TotalReceitas).ToString("C2"))</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white bg-danger">
+                        <div class="card-body text-center">
+                            <h6 class="card-title">Total Despesas</h6>
+                            <h4>@(((decimal)ViewBag.TotalDespesas).ToString("C2"))</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-white @(((decimal)ViewBag.SaldoPeriodo) >= 0 ? "bg-primary" : "bg-warning")">
+                        <div class="card-body text-center">
+                            <h6 class="card-title">Saldo</h6>
+                            <h4>@(((decimal)ViewBag.SaldoPeriodo).ToString("C2"))</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gráficos -->
+            <div class="row">
+                <!-- Gráfico Pizza - Receitas vs Despesas -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-chart-pie"></i> Receitas vs Despesas</h6>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="graficoReceitasDespesas" width="400" height="400"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráfico Pizza - Receitas por Categoria -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-chart-pie"></i> Receitas por Categoria</h6>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="graficoReceitasCategoria" width="400" height="400"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Gráfico Pizza - Despesas por Categoria -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-chart-pie"></i> Despesas por Categoria</h6>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="graficoDespesasCategoria" width="400" height="400"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráfico de Barras - Evolução Mensal -->
+                <div class="col-md-6 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0"><i class="fas fa-chart-bar"></i> Evolução dos Últimos 6 Meses</h6>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="graficoEvolucaoMensal" width="400" height="400"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabelas de Dados -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h6 class="mb-0">Receitas por Categoria</h6>
+                        </div>
+                        <div class="card-body">
+                            @if (((IEnumerable<dynamic>)ViewBag.ReceitasPorCategoria).Any())
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Categoria</th>
+                                                <th class="text-end">Total</th>
+                                                <th class="text-end">%</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (dynamic item in (IEnumerable<dynamic>)ViewBag.ReceitasPorCategoria)
+                                            {
+                                                var percentual = (decimal)ViewBag.TotalReceitas > 0 ? ((decimal)item.Total / (decimal)ViewBag.TotalReceitas * 100) : 0;
+                                                <tr>
+                                                    <td>@item.Categoria</td>
+                                                    <td class="text-end text-success">
+                                                        <strong>@(((decimal)item.Total).ToString("C2"))</strong>
+                                                    </td>
+                                                    <td class="text-end">@percentual.ToString("F1")%</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted text-center">Nenhuma receita no período</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-danger text-white">
+                            <h6 class="mb-0">Despesas por Categoria</h6>
+                        </div>
+                        <div class="card-body">
+                            @if (((IEnumerable<dynamic>)ViewBag.DespesasPorCategoria).Any())
+                            {
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Categoria</th>
+                                                <th class="text-end">Total</th>
+                                                <th class="text-end">%</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (dynamic item in (IEnumerable<dynamic>)ViewBag.DespesasPorCategoria)
+                                            {
+                                                var percentual = (decimal)ViewBag.TotalDespesas > 0 ? ((decimal)item.Total / (decimal)ViewBag.TotalDespesas * 100) : 0;
+                                                <tr>
+                                                    <td>@item.Categoria</td>
+                                                    <td class="text-end text-danger">
+                                                        <strong>@(((decimal)item.Total).ToString("C2"))</strong>
+                                                    </td>
+                                                    <td class="text-end">@percentual.ToString("F1")%</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="text-muted text-center">Nenhuma despesa no período</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
+    <script>
+        // Dados do servidor
+        const totalReceitas = @ViewBag.TotalReceitas;
+        const totalDespesas = @ViewBag.TotalDespesas;
+        const receitasPorCategoria = @Html.Raw(Json.Serialize(ViewBag.ReceitasPorCategoria));
+        const despesasPorCategoria = @Html.Raw(Json.Serialize(ViewBag.DespesasPorCategoria));
+        const dadosMensais = @Html.Raw(Json.Serialize(ViewBag.DadosMensais));
+
+        // Cores para os gráficos
+        const coresReceitas = ['#28a745', '#20c997', '#17a2b8', '#6f42c1', '#e83e8c', '#fd7e14'];
+        const coresDespesas = ['#dc3545', '#e74c3c', '#c0392b', '#a93226', '#922b21', '#7b241c'];
+
+        // Gráfico 1: Receitas vs Despesas
+        const ctx1 = document.getElementById('graficoReceitasDespesas').getContext('2d');
+        new Chart(ctx1, {
+            type: 'pie',
+            data: {
+                labels: ['Receitas', 'Despesas'],
+                datasets: [{
+                    data: [totalReceitas, totalDespesas],
+                    backgroundColor: ['#28a745', '#dc3545'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed;
+                                const total = totalReceitas + totalDespesas;
+                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                return context.label + ': ' + value.toLocaleString('pt-BR', {
+                                    style: 'currency',
+                                    currency: 'BRL'
+                                }) + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gráfico 2: Receitas por Categoria
+        const ctx2 = document.getElementById('graficoReceitasCategoria').getContext('2d');
+        new Chart(ctx2, {
+            type: 'pie',
+            data: {
+                labels: receitasPorCategoria.map(item => item.categoria),
+                datasets: [{
+                    data: receitasPorCategoria.map(item => item.total),
+                    backgroundColor: coresReceitas.slice(0, receitasPorCategoria.length),
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed;
+                                const percentage = totalReceitas > 0 ? ((value / totalReceitas) * 100).toFixed(1) : 0;
+                                return context.label + ': ' + value.toLocaleString('pt-BR', {
+                                    style: 'currency',
+                                    currency: 'BRL'
+                                }) + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gráfico 3: Despesas por Categoria
+        const ctx3 = document.getElementById('graficoDespesasCategoria').getContext('2d');
+        new Chart(ctx3, {
+            type: 'pie',
+            data: {
+                labels: despesasPorCategoria.map(item => item.categoria),
+                datasets: [{
+                    data: despesasPorCategoria.map(item => item.total),
+                    backgroundColor: coresDespesas.slice(0, despesasPorCategoria.length),
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.parsed;
+                                const percentage = totalDespesas > 0 ? ((value / totalDespesas) * 100).toFixed(1) : 0;
+                                return context.label + ': ' + value.toLocaleString('pt-BR', {
+                                    style: 'currency',
+                                    currency: 'BRL'
+                                }) + ' (' + percentage + '%)';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Gráfico 4: Evolução Mensal
+        const ctx4 = document.getElementById('graficoEvolucaoMensal').getContext('2d');
+        new Chart(ctx4, {
+            type: 'bar',
+            data: {
+                labels: dadosMensais.map(item => item.mes),
+                datasets: [
+                    {
+                        label: 'Receitas',
+                        data: dadosMensais.map(item => item.receitas),
+                        backgroundColor: '#28a745',
+                        borderColor: '#1e7e34',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Despesas',
+                        data: dadosMensais.map(item => item.despesas),
+                        backgroundColor: '#dc3545',
+                        borderColor: '#c82333',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y.toLocaleString('pt-BR', {
+                                    style: 'currency',
+                                    currency: 'BRL'
+                                });
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString('pt-BR', {
+                                    style: 'currency',
+                                    currency: 'BRL'
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}

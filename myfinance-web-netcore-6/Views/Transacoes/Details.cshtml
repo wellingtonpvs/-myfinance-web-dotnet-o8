@@ -1,0 +1,173 @@
+@model myfinance_web_netcore.Models.Transacao
+
+@{
+    ViewData["Title"] = "Detalhes da Transação";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a asp-action="Index">Transações</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Detalhes</li>
+                </ol>
+            </nav>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-info-circle"></i> Detalhes da Transação</h2>
+                <div class="btn-group">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> Editar
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Voltar
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-exchange-alt"></i> Informações da Transação
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-borderless">
+                                <tbody>
+                                    <tr>
+                                        <th scope="row" class="text-muted" style="width: 30%;">Histórico:</th>
+                                        <td><strong>@Html.DisplayFor(model => model.Historico)</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="text-muted">Data:</th>
+                                        <td>
+                                            <i class="fas fa-calendar"></i> @Model.Data.ToString("dd/MM/yyyy")
+                                            <i class="fas fa-clock ms-2"></i> @Model.Data.ToString("HH:mm")
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="text-muted">Plano de Contas:</th>
+                                        <td>
+                                            <span class="badge bg-secondary">@Model.PlanoContas?.Codigo</span>
+                                            <strong>@Model.PlanoContas?.Descricao</strong>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="text-muted">Tipo:</th>
+                                        <td>
+                                            @if (Model.PlanoContas?.Tipo == myfinance_web_netcore.Models.TipoPlanoContas.Receita)
+                                            {
+                                                <span class="badge bg-success fs-6">
+                                                    <i class="fas fa-arrow-up"></i> Receita
+                                                </span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-danger fs-6">
+                                                    <i class="fas fa-arrow-down"></i> Despesa
+                                                </span>
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="text-muted">Valor:</th>
+                                        <td>
+                                            <h4 class="@(Model.PlanoContas?.Tipo == myfinance_web_netcore.Models.TipoPlanoContas.Receita ? "text-success" : "text-danger") mb-0">
+                                                @Model.ValorFormatado
+                                            </h4>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th scope="row" class="text-muted">Data de Criação:</th>
+                                        <td>@Model.DataCriacao.ToString("dd/MM/yyyy 'às' HH:mm")</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <!-- Card de Resumo -->
+                    <div class="card @(Model.PlanoContas?.Tipo == myfinance_web_netcore.Models.TipoPlanoContas.Receita ? "border-success" : "border-danger")">
+                        <div class="card-header @(Model.PlanoContas?.Tipo == myfinance_web_netcore.Models.TipoPlanoContas.Receita ? "bg-success" : "bg-danger") text-white">
+                            <h6 class="mb-0">
+                                <i class="fas fa-chart-line"></i> Resumo da Transação
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center">
+                                <div class="mb-3">
+                                    <i class="@(Model.PlanoContas?.Tipo == myfinance_web_netcore.Models.TipoPlanoContas.Receita ? "fas fa-arrow-up text-success" : "fas fa-arrow-down text-danger") fa-3x"></i>
+                                </div>
+                                <h5 class="@(Model.PlanoContas?.Tipo == myfinance_web_netcore.Models.TipoPlanoContas.Receita ? "text-success" : "text-danger")">
+                                    @Model.ValorFormatado
+                                </h5>
+                                <p class="text-muted small">
+                                    @(Model.PlanoContas?.Tipo == myfinance_web_netcore.Models.TipoPlanoContas.Receita ? "Esta transação aumenta" : "Esta transação diminui") seu saldo
+                                </p>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="small text-muted">
+                                <p><strong>Categoria:</strong> @Model.PlanoContas?.Descricao</p>
+                                <p><strong>Registrada em:</strong> @Model.DataCriacao.ToString("dd/MM/yyyy")</p>
+                                <p class="mb-0"><strong>ID da Transação:</strong> #@Model.Id</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card de Contexto -->
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <i class="fas fa-lightbulb text-warning"></i> Contexto
+                            </h6>
+                            <p class="card-text small">
+                                Esta transação foi categorizada como <strong>@Model.TipoTransacao</strong> 
+                                e está vinculada ao plano de contas 
+                                <strong>"@Model.PlanoContas?.Descricao"</strong> (código @Model.PlanoContas?.Codigo).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card de Ações -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="fas fa-cogs"></i> Ações Disponíveis
+                    </h6>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                            <i class="fas fa-edit"></i> Editar esta Transação
+                        </a>
+                        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Excluir esta Transação
+                        </a>
+                        <a asp-action="Create" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Nova Transação
+                        </a>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-list"></i> Ver Todas as Transações
+                        </a>
+                        <a asp-controller="PlanoContas" asp-action="Details" asp-route-id="@Model.PlanoContasId" class="btn btn-info">
+                            <i class="fas fa-tags"></i> Ver Plano de Contas
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+}

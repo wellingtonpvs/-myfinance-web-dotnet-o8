@@ -1,0 +1,140 @@
+@model myfinance_web_netcore.Models.Transacao
+
+@{
+    ViewData["Title"] = "Editar Transação";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a asp-action="Index">Transações</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">Editar</li>
+                </ol>
+            </nav>
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-edit"></i> Editar Transação</h2>
+                <div class="btn-group">
+                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info">
+                        <i class="fas fa-eye"></i> Visualizar
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Voltar
+                    </a>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <form asp-action="Edit" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+                        
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="DataCriacao" />
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Historico" class="form-label"></label>
+                                    <input asp-for="Historico" class="form-control" />
+                                    <span asp-validation-for="Historico" class="text-danger"></span>
+                                    <small class="form-text text-muted">Descrição da transação</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="form-group mb-3">
+                                    <label asp-for="PlanoContasId" class="form-label"></label>
+                                    @Html.DropDownList("PlanoContasId", ViewBag.PlanoContasId as SelectList, "Selecione o plano de contas", new { @class = "form-select" })
+                                    <span asp-validation-for="PlanoContasId" class="text-danger"></span>
+                                    <small class="form-text text-muted">Categoria da transação</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Data" class="form-label"></label>
+                                    <input asp-for="Data" class="form-control" type="datetime-local" />
+                                    <span asp-validation-for="Data" class="text-danger"></span>
+                                    <small class="form-text text-muted">Data e hora da transação</small>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label asp-for="Valor" class="form-label"></label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">R$</span>
+                                        <input asp-for="Valor" class="form-control" step="0.01" />
+                                    </div>
+                                    <span asp-validation-for="Valor" class="text-danger"></span>
+                                    <small class="form-text text-muted">Valor da transação</small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="form-group mb-3">
+                                    <label class="form-label">Data de Criação</label>
+                                    <input type="text" class="form-control" value="@Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")" readonly />
+                                    <small class="form-text text-muted">Data de criação do registro</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="fas fa-save"></i> Salvar Alterações
+                                    </button>
+                                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info">
+                                        <i class="fas fa-eye"></i> Visualizar
+                                    </a>
+                                    <a asp-action="Index" class="btn btn-secondary">
+                                        <i class="fas fa-times"></i> Cancelar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Card de Informações -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-exclamation-triangle"></i> Atenção</h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">
+                        <strong>Alterações na transação:</strong> As modificações feitas aqui irão afetar os relatórios 
+                        e o saldo geral. Certifique-se de que as alterações estão corretas antes de salvar.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Formatar a data para datetime-local se necessário
+            const dataInput = document.querySelector('input[asp-for="Data"]');
+            if (dataInput && dataInput.value) {
+                const date = new Date(dataInput.value);
+                date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+                dataInput.value = date.toISOString().slice(0, 16);
+            }
+        });
+    </script>
+}

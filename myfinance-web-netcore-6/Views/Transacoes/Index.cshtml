@@ -1,0 +1,224 @@
+@model IEnumerable<myfinance_web_netcore.Models.Transacao>
+
+@{
+    ViewData["Title"] = "Transações";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-exchange-alt"></i> Transações</h2>
+                <a asp-action="Create" class="btn btn-success">
+                    <i class="fas fa-plus"></i> Nova Transação
+                </a>
+            </div>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle"></i> @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <!-- Filtros -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-filter"></i> Filtros</h6>
+                </div>
+                <div class="card-body">
+                    <form method="get" asp-action="Index">
+                        <div class="row g-3">
+                            <div class="col-md-2">
+                                <label class="form-label">Tipo</label>
+                                <select name="filtroTipo" class="form-select">
+                                    <option value="">Todos</option>
+                                    <option value="Receita" selected="@(ViewBag.FiltroTipo == "Receita")">Receitas</option>
+                                    <option value="Despesa" selected="@(ViewBag.FiltroTipo == "Despesa")">Despesas</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Plano de Contas</label>
+                                @Html.DropDownList("planoContasId", ViewBag.PlanoContas as SelectList, "Todos", new { @class = "form-select" })
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Data Início</label>
+                                <input type="date" name="dataInicio" class="form-control" value="@ViewBag.DataInicio" />
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Data Fim</label>
+                                <input type="date" name="dataFim" class="form-control" value="@ViewBag.DataFim" />
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <div class="btn-group w-100">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Filtrar
+                                    </button>
+                                    <a asp-action="Index" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times"></i> Limpar
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Resumo Financeiro -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-success">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Receitas</h6>
+                                    <h4>@(((decimal)ViewBag.TotalReceitas).ToString("C2"))</h4>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-arrow-up fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-danger">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Despesas</h6>
+                                    <h4>@(((decimal)ViewBag.TotalDespesas).ToString("C2"))</h4>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-arrow-down fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white @(((decimal)ViewBag.Saldo) >= 0 ? "bg-primary" : "bg-warning")">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Saldo</h6>
+                                    <h4>@(((decimal)ViewBag.Saldo).ToString("C2"))</h4>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-balance-scale fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-info">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h6 class="card-title">Total Transações</h6>
+                                    <h4>@Model.Count()</h4>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-list fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lista de Transações -->
+            <div class="card">
+                <div class="card-body">
+                    @if (Model.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Histórico</th>
+                                        <th>Plano de Contas</th>
+                                        <th>Tipo</th>
+                                        <th class="text-end">Valor</th>
+                                        <th class="text-center">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <small class="text-muted">@item.Data.ToString("dd/MM/yyyy")</small><br>
+                                                <small>@item.Data.ToString("HH:mm")</small>
+                                            </td>
+                                            <td>
+                                                <strong>@Html.DisplayFor(modelItem => item.Historico)</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-secondary">@item.PlanoContas?.Codigo</span>
+                                                @item.PlanoContas?.Descricao
+                                            </td>
+                                            <td>
+                                                @if (item.PlanoContas?.Tipo == myfinance_web_netcore.Models.TipoPlanoContas.Receita)
+                                                {
+                                                    <span class="badge bg-success">
+                                                        <i class="fas fa-arrow-up"></i> Receita
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">
+                                                        <i class="fas fa-arrow-down"></i> Despesa
+                                                    </span>
+                                                }
+                                            </td>
+                                            <td class="text-end">
+                                                <strong class="@(item.PlanoContas?.Tipo == myfinance_web_netcore.Models.TipoPlanoContas.Receita ? "text-success" : "text-danger")">
+                                                    @item.ValorFormatado
+                                                </strong>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group" role="group">
+                                                    <a asp-action="Details" asp-route-id="@item.Id" 
+                                                       class="btn btn-outline-info btn-sm" title="Visualizar">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a asp-action="Edit" asp-route-id="@item.Id" 
+                                                       class="btn btn-outline-warning btn-sm" title="Editar">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                    <a asp-action="Delete" asp-route-id="@item.Id" 
+                                                       class="btn btn-outline-danger btn-sm" title="Excluir">
+                                                        <i class="fas fa-trash"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">Nenhuma transação encontrada</h5>
+                            <p class="text-muted">Clique no botão "Nova Transação" para começar a registrar suas movimentações financeiras.</p>
+                            <a asp-action="Create" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Criar Primeira Transação
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+}
