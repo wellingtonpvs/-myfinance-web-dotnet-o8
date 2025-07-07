@@ -82,13 +82,7 @@ O projeto segue a arquitetura **MVC (Model-View-Controller)**, promovendo separa
    dotnet restore
    ```
 
-3. **(Opcional) Instale o EF CLI:**
-
-   ```bash
-   dotnet tool install --global dotnet-ef --version 6.0.25
-   ```
-
-4. **Verifique o arquivo de configuração do banco:**
+3. **Verifique o arquivo de configuração do banco:**
 
    O `appsettings.json` já vem configurado para SQLite:
 
@@ -100,30 +94,22 @@ O projeto segue a arquitetura **MVC (Model-View-Controller)**, promovendo separa
    }
    ```
 
-5. **Crie/atualize o banco de dados:**
+4. **Crie/atualize o banco de dados:**
 
    ```bash
    dotnet ef migrations add InitialCreate   # (caso não tenha sido criado ainda)
    dotnet ef database update
    ```
 
-6. **Execute o projeto:**
+5. **Execute o projeto:**
 
    ```bash
    dotnet run
    ```
 
-7. **Acesse via navegador:**
+6. **Acesse via navegador:**
 
    * 🔒 HTTPS: [https://localhost:7006](https://localhost:7006)
    * 🌐 HTTP:  [http://localhost:5088](http://localhost:5088)
 
 ---
-
-## 📝 Licença e Créditos
-
-Este projeto foi desenvolvido como parte da disciplina *Práticas de Implementação e Evolução de Software* do curso de Pós-Graduação em Engenharia de Software (PUC Minas).
-
----
-
-Se quiser, posso deixar ainda mais estilizado ou adaptado para publicação no GitHub Pages. Deseja isso também?
